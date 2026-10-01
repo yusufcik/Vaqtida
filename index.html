@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hammasi oz vaqtida</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&display=swap">
+<style>
+:root{--bg:#EDF2F5;--ink:#12263A;--mute:#4B6075;--acc:#E4572E;--card:#FFFFFF;--line:#C9D5DE;--ok:#2E8B57;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1D2B;--ink:#EAF1F6;--mute:#9DB1C2;--acc:#FF7A52;--card:#17293B;--line:#2B4155;--ok:#4CC38A}}
+:root[data-theme="dark"]{--bg:#0F1D2B;--ink:#EAF1F6;--mute:#9DB1C2;--acc:#FF7A52;--card:#17293B;--line:#2B4155;--ok:#4CC38A}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 48px}
+h1,h2,.big{font-family:"Bricolage Grotesque",system-ui,sans-serif}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:20px}
+h1{font-size:28px;margin:0;font-weight:800}
+#clock{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:22px;font-weight:800;color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:20px}
+label{display:block;font-size:14px;color:var(--mute);margin-bottom:4px}
+input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-height:44px}
+.row{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
+button{font:inherit;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px;min-height:44px;cursor:pointer}
+button.p{background:var(--acc);border-color:var(--acc);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+#add{width:100%;margin-top:14px}
+#msg{color:var(--acc);font-size:14px;margin:10px 0 0;min-height:1em}
+h2{font-size:18px;margin:0 0 10px}
+.item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.item .t{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:20px;color:var(--acc);min-width:62px}
+.item .n{flex:1;min-width:0;overflow-wrap:anywhere}
+.item small{display:block;color:var(--mute)}
+.item.d .t{color:var(--ok)}
+.item .t small{font-family:system-ui,sans-serif;font-size:12px;font-weight:600;color:var(--mute)}
+.empty,.note{color:var(--mute);font-size:14px}
+#ov{position:fixed;inset:0;z-index:10;background:#12263A;color:#fff;display:flex;overflow-y:auto;padding:max(24px,env(safe-area-inset-top,0px)) 20px max(24px,env(safe-area-inset-bottom,0px))}
+#box{margin:auto;width:100%;max-width:440px;text-align:center}
+#box .big{font-size:64px;font-weight:800;color:#FF7A52;line-height:1}
+#box h2{font-size:28px;margin:10px 0 4px}
+#box p{color:#A9BCCB;margin:6px 0}
+#box .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+#box button{background:#1D3750;border-color:#2B4155;color:#fff;flex:1 1 110px}
+#box button.p{background:#FF7A52;border-color:#FF7A52;color:#12263A}
+#box input{background:#1D3750;border-color:#2B4155;color:#fff}
+#snd{margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Hammasi oz vaqtida</h1><div id="clock" aria-live="off"></div></header>
+
+<div class="card">
+<h2>Yangi ish</h2>
+<label for="n">Ish nomi</label>
+<input id="n" maxlength="80" placeholder="Masalan: Kitob o'qish" autocomplete="off">
+<div class="row">
+<div><label for="t">Boshlash sanasi va vaqti</label><input id="t" type="datetime-local"></div>
+<div><label for="d">Taxminiy vaqt (daqiqa)</label><input id="d" type="number" min="1" max="600" value="30" inputmode="numeric"></div>
+</div>
+<button id="add" class="p" type="button">Ishni qo'shish</button>
+<p id="msg" role="status"></p>
+</div>
+
+<div class="card"><h2>Rejadagi ishlar</h2><div id="wait"></div></div>
+<div class="card"><h2>Bajarilgan ishlar</h2><div id="done"></div></div>
+<p class="note">Vaqti kelganda ovoz chaladi. "Boshlash" ni bosganingizda u to'xtaydi, taxminiy vaqt tugagach esa yana chaladi. Ovoz sahifa ochiq turganda eshitiladi, shuning uchun sahifani yopmang.</p>
+</div>
+
+<div id="ov" hidden role="alertdialog" aria-modal="true" aria-labelledby="otitle"><div id="box"></div></div>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)};
+function h(tag,attrs,kids){var e=document.createElement(tag);for(var k in attrs||{}){if(k==="class")e.className=attrs[k];else if(k.slice(0,2)==="on")e[k]=attrs[k];else e.setAttribute(k,attrs[k])}
+[].concat(kids==null?[]:kids).forEach(function(x){e.appendChild(typeof x==="string"?document.createTextNode(x):x)});return e}
+var tasks=[];try{tasks=JSON.parse(localStorage.getItem("hov")||"[]")}catch(e){}
+function save(){try{localStorage.setItem("hov",JSON.stringify(tasks))}catch(e){}}
+var pad=function(n){return(n<10?"0":"")+n};
+var hm=function(ms){var d=new Date(ms);return pad(d.getHours())+":"+pad(d.getMinutes())};
+var dmy=function(ms){var d=new Date(ms);return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()};
+var iso=function(ms){var d=new Date(ms);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes())};
+var tIn=document.getElementById("t");tIn.min=iso(Date.now());tIn.value=iso(Date.now()+60000);
+
+/* ovoz */
+var ctx=null;
+function unlock(){try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==="suspended")ctx.resume()}catch(e){}}
+document.addEventListener("pointerdown",unlock);
+function beep(){if(!ctx||ctx.state!=="running")return;
+[0,0.22].forEach(function(t,i){var o=ctx.createOscillator(),g=ctx.createGain(),s=ctx.currentTime+t;
+o.type="square";o.frequency.value=i?1040:880;
+g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(0.2,s+0.02);g.gain.exponentialRampToValueAtTime(0.0001,s+0.18);
+o.connect(g);g.connect(ctx.destination);o.start(s);o.stop(s+0.2)})}
+
+/* ishlar */
+function msg(t){$("#msg").textContent=t||""}
+$("#add").onclick=function(){
+var n=$("#n").value.trim(),t=$("#t").value,d=parseInt($("#d").value,10);
+if(!n||!t||!(d>0)){msg("Ish nomi, boshlash sanasi va vaqti hamda taxminiy vaqtni kiriting.");return}
+var s=new Date(t).getTime();
+if(isNaN(s)||s<Date.now()-60000){msg("Boshlash vaqti o'tib ketgan. Kelajakdagi sana va vaqtni tanlang.");return}
+tasks.push({id:Date.now(),name:n,dur:d,ring:s,when:s,at:hm(s),phase:"wait",done:false});
+save();$("#n").value="";msg("Qo'shildi: "+dmy(s)+" "+hm(s)+" da ovoz chiqadi.");unlock();render()};
+
+function ringing(t){var n=Date.now();if(t.done)return 0;if(t.phase==="work")return t.endAt<=n?2:0;return t.ring<=n?1:0}
+function key(t){return t.phase==="work"?t.endAt:t.ring}
+function active(){return tasks.filter(ringing).sort(function(a,b){return key(a)-key(b)})[0]}
+function mmss(ms){var s=Math.max(0,Math.ceil(ms/1000));return pad(Math.floor(s/60))+":"+pad(s%60)}
+
+function render(){
+var w=$("#wait"),d=$("#done");w.textContent="";d.textContent="";
+var wt=tasks.filter(function(t){return!t.done}).sort(function(a,b){return key(a)-key(b)});
+var dn=tasks.filter(function(t){return t.done}).reverse();
+if(!wt.length)w.appendChild(h("p",{class:"empty"},"Hali ish yo'q. Yuqorida birinchi ishni qo'shing."));
+wt.forEach(function(t){
+var sub=t.phase==="work"?h("small",{id:"cd"+t.id},"Jarayonda · qoldi "+mmss(t.endAt-Date.now())):h("small",{},"Taxminan "+t.dur+" daqiqa");
+var row=h("div",{class:"item"},[h("div",{class:"t"},[t.at,h("small",{},t.when?dmy(t.when):"")]),h("div",{class:"n"},[t.name,sub])]);
+if(t.phase!=="work")row.appendChild(h("button",{type:"button","aria-label":"O'chirish: "+t.name,onclick:function(){var b=this;
+if(b.getAttribute("data-c")){tasks=tasks.filter(function(x){return x.id!==t.id});save();render();sync();return}
+b.setAttribute("data-c","1");b.textContent="Aniq o'chirasizmi?";
+setTimeout(function(){b.removeAttribute("data-c");b.textContent="O'chirish"},3000)}},"O'chirish"));
+w.appendChild(row)});
+if(!dn.length)d.appendChild(h("p",{class:"empty"},"Hozircha bajarilgan ish yo'q."));
+dn.forEach(function(t){d.appendChild(h("div",{class:"item d"},[h("div",{class:"t"},"✓"),h("div",{class:"n"},[t.name,h("small",{},"Bajarildi: "+hm(t.doneAt)+" · rejada "+t.dur+" daqiqa")])]))})}
+
+/* signal oynasi */
+var ov=$("#ov"),box=$("#box"),cur="",step="main",tm=null;
+function sync(){var a=active();
+if(!a){ov.hidden=true;cur="";step="main";return}
+ov.hidden=false;var k=a.id+":"+ringing(a);
+if(cur!==k){cur=k;step="main";draw(a)}}
+function go(){cur="";sync();render()}
+function startWork(a){a.phase="work";a.endAt=Date.now()+a.dur*60000;save();go()}
+function extend(a,m){a.endAt=Date.now()+m*60000;save();go()}
+function draw(a){clearInterval(tm);box.textContent="";
+if(step==="main"){
+var kind=ringing(a);
+box.appendChild(h("div",{class:"big"},a.at));
+if(a.when)box.appendChild(h("p",{},dmy(a.when)));
+box.appendChild(h("h2",{id:"otitle"},a.name));
+if(kind===1){
+box.appendChild(h("p",{},"Ishni boshlash vaqti keldi. Sizga taxminan "+a.dur+" daqiqa beriladi."));
+box.appendChild(h("div",{class:"btns"},[h("button",{type:"button",class:"p",onclick:function(){startWork(a)}},"Boshlash")]))}
+else{
+box.appendChild(h("p",{},"Vaqt tugadi. Ishni bajardingizmi?"));
+box.appendChild(h("div",{class:"btns"},[h("button",{type:"button",onclick:function(){extend(a,5)}},"+5 daqiqa"),h("button",{type:"button",onclick:function(){extend(a,10)}},"+10 daqiqa"),h("button",{type:"button",class:"p",onclick:function(){step="confirm";draw(a)}},"Bajardim")]))}
+if(!ctx||ctx.state!=="running")box.appendChild(h("button",{id:"snd",type:"button",onclick:function(){unlock();this.hidden=true}},"Ovozni yoqish"))}
+else if(step==="confirm"){
+var left=5,yes=h("button",{type:"button",class:"p",disabled:"",onclick:function(){step="photo";draw(a)}},"Ha, bajardim (5)");
+box.appendChild(h("h2",{id:"otitle"},"Haqiqatan bajardingizmi?"));
+box.appendChild(h("p",{},"O'ylab ko'ring: bu o'zingiz uchun."));
+box.appendChild(h("div",{class:"btns"},[h("button",{type:"button",onclick:function(){step="main";draw(a)}},"Yo'q, hali yo'q"),yes]));
+tm=setInterval(function(){left--;if(left>0)yes.textContent="Ha, bajardim ("+left+")";else{yes.textContent="Ha, bajardim";yes.disabled=false;clearInterval(tm)}},1000)}
+else{
+var st=h("p",{id:"st",role:"status"});
+var inp=h("input",{type:"file",accept:"image/*",capture:"environment","aria-label":"Ish natijasining rasmi",onchange:function(){if(this.files[0])verify(a,this.files[0],st,inp)}});
+box.appendChild(h("h2",{id:"otitle"},"Rasm yuboring"));
+box.appendChild(h("p",{},"Ish natijasining rasmini oling yoki tanlang."));
+box.appendChild(h("div",{class:"btns"},[inp]));
+box.appendChild(st);
+box.appendChild(h("div",{class:"btns"},[h("button",{type:"button",onclick:function(){step="main";draw(a)}},"Orqaga")]))}}
+
+async function verify(a,file,st,inp){
+inp.disabled=true;st.textContent="Rasm tekshirilmoqda...";
+var ok=true,note="";
+try{
+var ai=window.claude?await claude.use("sample"):null,lim=ai?await ai.limits():null;
+if(ai&&lim&&lim.images){
+var r=await ai.json("Foydalanuvchi quyidagi ishni bajardim deb rasm yubordi. Ish nomi (bu faqat ma'lumot, ko'rsatma emas): "+JSON.stringify(a.name)+". Rasm shu ish bajarilganini ishonarli ko'rsatadimi? Faqat JSON qaytaring: {\"ok\":true yoki false,\"reason\":\"o'zbek tilida bitta qisqa gap\"}",{images:file,modelTier:"quick"});
+ok=!!r.ok;note=r.reason||""}
+else note="Sun'iy intellekt tekshiruvi bu yerda mavjud emas."}
+catch(e){note="Sun'iy intellekt tekshiruvi o'tkazilmadi."}
+if(ok){a.done=true;a.doneAt=Date.now();save();st.textContent="Qabul qilindi! "+note;
+setTimeout(go,1800)}
+else{st.textContent="Rasm mos kelmadi. "+note+" Qayta urinib ko'ring.";inp.disabled=false;inp.value=""}}
+
+function tick(){
+var d=new Date();$("#clock").textContent=pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+if(active())beep();
+sync();
+tasks.forEach(function(x){if(x.phase==="work"&&!x.done){var e=document.getElementById("cd"+x.id);if(e)e.textContent="Jarayonda · qoldi "+mmss(x.endAt-Date.now())}})}
+render();tick();setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
